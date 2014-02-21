@@ -1,22 +1,22 @@
 # coding: utf-8
-lib = File.expand_path('../lib', __FILE__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'omniauth/slack/version'
+require File.expand_path('../lib/omniauth-slack/version', __FILE__)
 
 Gem::Specification.new do |spec|
   spec.name          = "omniauth-slack"
   spec.version       = Omniauth::Slack::VERSION
   spec.authors       = ["kimura"]
   spec.email         = ["kimura@enigmo.co.jp"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
-  spec.homepage      = ""
+  spec.description   = %q{OmniAuth strategy for Slack}
+  spec.summary       = %q{OmniAuth strategy for Slack}
+  spec.homepage      = "https://github.com/kmrshntr/omniauth-slack.git"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
+
+  spec.add_runtime_dependency 'omniauth-oauth2' "~> 1.1.2"
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
