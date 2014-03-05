@@ -16,10 +16,23 @@ module OmniAuth
         param_name: 'token'
       }
 
-      extra do
+      uid { raw_info['user_id'] }
+
+      info do
         {
-          'members' => access_token.get('/api/users.list').parsed['members']
+          team: raw_info['team'],
+          user: raw_info['user'],
+          team_id: raw_info['team_id'],
+          user_id: raw_info['user_id']
         }
+      end
+
+      extra do
+        {:raw_info => raw_info}
+      end
+
+      def raw_info
+        @raw_info ||= access_token.get('/api/auth.test').parsed
       end
 
     end
