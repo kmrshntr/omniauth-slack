@@ -6,6 +6,8 @@ module OmniAuth
 
       option :name, "slack"
 
+      option :authorize_options, [ :scope, :team ]
+
       option :client_options, {
         site: "https://slack.com",
         token_url: "/api/oauth.access"
