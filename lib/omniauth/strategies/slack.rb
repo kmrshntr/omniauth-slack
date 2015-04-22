@@ -40,6 +40,16 @@ module OmniAuth
         {:raw_info => raw_info, :user_info => user_info}
       end
 
+      def authorize_params
+        super.tap do |params|
+          %w[scope team].each do |v|
+            if request.params[v]
+              params[v.to_sym] = request.params[v]
+            end
+          end
+        end
+      end
+
       def user_info
         @user_info ||= access_token.get("/api/users.info?user=#{raw_info['user_id']}").parsed
       end
