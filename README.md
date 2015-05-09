@@ -51,7 +51,7 @@ Slack lets you choose from a [few different scopes](https://api.slack.com/docs/o
 
 ## Authentication Options
 
-#### State
+### State
 
 > *unique string to be passed back upon completion*
 
@@ -74,6 +74,18 @@ class CallbackController < ApplicationController
 end
 ```
 
+### Team
+
+> If you don't pass a team param, the user will be allowed to choose which team they are authenticating against. Passing this param ensures the user will auth against an account on that particular team.
+
+If you need to ensure that the users use the team whose team_id is 'XXXXXXXX', you can do so by passing `:team` option in your `config/initializers/omniauth.rb` like this:
+
+```ruby
+Rails.application.config.middleware.use OmniAuth::Builder do
+  provider :slack, "API_KEY", "API_SECRET", scope: "identify,read,post", team: 'XXXXXXXX'
+end
+```
+
 ## Contributing
 
 1. Fork it
@@ -84,4 +96,3 @@ end
 
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/kmrshntr/omniauth-slack/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
