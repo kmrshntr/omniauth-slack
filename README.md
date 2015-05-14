@@ -51,29 +51,6 @@ Slack lets you choose from a [few different scopes](https://api.slack.com/docs/o
 
 ## Authentication Options
 
-### State
-
-> *unique string to be passed back upon completion*
-
-> The state parameter should be used to avoid forgery attacks by passing in a value that's unique to the user you're authenticating and checking it when auth completes.
-
-for a logged in user, you might want to include state, for example with devise:
-
-`https://www.yourapp.com/users/auth/slack?state=1234-foobutter`
-
-creates an auth session with `state`
-
-After a successful auth, the callback request will include `request.env["omniauth.params"]` hash
-
-```ruby
-class CallbackController < ApplicationController
-  def slack
-    request.env["omniauth.params"]["state"]
-    # => "1234-foobutter"
-  end
-end
-```
-
 ### Team
 
 > If you don't pass a team param, the user will be allowed to choose which team they are authenticating against. Passing this param ensures the user will auth against an account on that particular team.
