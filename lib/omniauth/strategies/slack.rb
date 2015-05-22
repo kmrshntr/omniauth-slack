@@ -28,11 +28,16 @@ module OmniAuth
           first_name: user_info['user']['profile']['first_name'],
           last_name: user_info['user']['profile']['last_name'],
           description: user_info['user']['profile']['title'],
+          image_24: user_info['user']['profile']['image_24'],
+          image_48: user_info['user']['profile']['image_48'],
           image: user_info['user']['profile']['image_192'],
           team: raw_info['team'],
           user: raw_info['user'],
           team_id: raw_info['team_id'],
-          user_id: raw_info['user_id']
+          user_id: raw_info['user_id'],
+          is_admin: user_info['user']['is_admin'],
+          is_owner: user_info['user']['is_owner'],
+          time_zone: user_info['user']['tz']
         }
       end
 
