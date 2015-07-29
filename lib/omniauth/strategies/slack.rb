@@ -34,6 +34,7 @@ module OmniAuth
           team: raw_info['team'],
           user: raw_info['user'],
           team_id: raw_info['team_id'],
+          team_domain: team_info['team']['domain'],
           user_id: raw_info['user_id'],
           is_admin: user_info['user']['is_admin'],
           is_owner: user_info['user']['is_owner'],
@@ -42,17 +43,20 @@ module OmniAuth
       end
 
       extra do
-        {:raw_info => raw_info, :user_info => user_info}
+        {:raw_info => raw_info, :user_info => user_info, :team_info => team_info}
       end
 
       def user_info
         @user_info ||= access_token.get("/api/users.info?user=#{raw_info['user_id']}").parsed
       end
 
+      def team_info
+        @team_info ||= access_token.get("/api/team.info").parsed
+      end
+
       def raw_info
         @raw_info ||= access_token.get("/api/auth.test").parsed
       end
-
     end
   end
 end
