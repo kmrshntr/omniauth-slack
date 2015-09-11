@@ -2,6 +2,8 @@
 
 This Gem contains the Slack strategy for OmniAuth.
 
+[![Gem Version](https://badge.fury.io/rb/omniauth-slack.svg)](http://badge.fury.io/rb/omniauth-slack)
+
 ## Before You Begin
 
 You should have already installed OmniAuth into your app; if not, read the [OmniAuth README](https://github.com/intridea/omniauth) to get started.
@@ -73,7 +75,3 @@ end
 
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/kmrshntr/omniauth-slack/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/kmrshntr/omniauth-slack/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
