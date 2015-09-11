@@ -3,14 +3,13 @@ require 'omniauth/strategies/oauth2'
 module OmniAuth
   module Strategies
     class Slack < OmniAuth::Strategies::OAuth2
+      option :name, 'slack'
 
-      option :name, "slack"
-
-      option :authorize_options, [ :scope, :team ]
+      option :authorize_options, [:scope, :team]
 
       option :client_options, {
-        site: "https://slack.com",
-        token_url: "/api/oauth.access"
+        site: 'https://slack.com',
+        token_url: '/api/oauth.access'
       }
 
       option :auth_token_params, {
@@ -43,7 +42,16 @@ module OmniAuth
       end
 
       extra do
-        {:raw_info => raw_info, :user_info => user_info, :team_info => team_info}
+        {
+          raw_info: raw_info,
+          user_info: user_info,
+          team_info: team_info,
+          web_hook_info: web_hook_info
+        }
+      end
+
+      def raw_info
+        @raw_info ||= access_token.get('/api/auth.test').parsed
       end
 
       def user_info
@@ -51,11 +59,19 @@ module OmniAuth
       end
 
       def team_info
-        @team_info ||= access_token.get("/api/team.info").parsed
+        @team_info ||= access_token.get('/api/team.info').parsed
       end
 
-      def raw_info
-        @raw_info ||= access_token.get("/api/auth.test").parsed
+      def web_hook_info
+        return {} unless incoming_webhook_allowed?
+        access_token.params['incoming_webhook']
+      end
+
+      def incoming_webhook_allowed?
+        return false unless options['scope']
+        webhooks_scopes = ['incoming-webhook']
+        scopes = options['scope'].split(',')
+        (scopes & webhooks_scopes).any?
       end
     end
   end
