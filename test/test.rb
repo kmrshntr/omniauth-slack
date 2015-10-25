@@ -98,3 +98,18 @@ class CredentialsTest < StrategyTestCase
     refute_has_key "refresh_token", strategy.credentials
   end
 end
+
+class UserInfoTest < StrategyTestCase
+  test 'info should not include extended info when skip_info is specified' do
+    @options = { skip_info: true }
+    strategy.stubs(:raw_info).returns({})
+    assert_equal %w[nickname team user team_id user_id], strategy.info.keys.map(&:to_s)
+  end
+
+  test 'extra should not include extended info when skip_info is specified' do
+    @options = { skip_info: true }
+    strategy.stubs(:raw_info).returns({})
+    strategy.stubs(:webhook_info).returns({})
+    assert_equal %w[raw_info web_hook_info], strategy.extra.keys.map(&:to_s)
+  end
+end
