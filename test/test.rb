@@ -98,3 +98,25 @@ class CredentialsTest < StrategyTestCase
     refute_has_key "refresh_token", strategy.credentials
   end
 end
+
+class UserInfoTest < StrategyTestCase
+  def setup
+    super
+    @access_token = stub("OAuth2::AccessToken")
+    strategy.stubs(:access_token).returns(@access_token)
+  end
+
+  test "performs a GET to https://slack.com/api/users.info" do
+    strategy.stubs(:raw_info).returns("user_id" => "U123")
+    @access_token.expects(:get).with("/api/users.info?user=U123")
+      .returns(stub_everything("OAuth2::Response"))
+    strategy.user_info
+  end
+
+  test "URI escapes user ID" do
+    strategy.stubs(:raw_info).returns("user_id" => "../haxx?U123#abc")
+    @access_token.expects(:get).with("/api/users.info?user=..%2Fhaxx%3FU123%23abc")
+      .returns(stub_everything("OAuth2::Response"))
+    strategy.user_info
+  end
+end

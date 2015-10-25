@@ -1,4 +1,6 @@
 require 'omniauth/strategies/oauth2'
+require 'uri'
+require 'rack/utils'
 
 module OmniAuth
   module Strategies
@@ -55,7 +57,11 @@ module OmniAuth
       end
 
       def user_info
-        @user_info ||= access_token.get("/api/users.info?user=#{raw_info['user_id']}").parsed
+        url = URI.parse("/api/users.info")
+        url.query = Rack::Utils.build_query(user: raw_info['user_id'])
+        url = url.to_s
+
+        @user_info ||= access_token.get(url).parsed
       end
 
       def team_info
