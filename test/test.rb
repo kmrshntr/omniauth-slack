@@ -98,3 +98,59 @@ class CredentialsTest < StrategyTestCase
     refute_has_key "refresh_token", strategy.credentials
   end
 end
+
+class ScopeTest < StrategyTestCase
+  test "handles space-delimited scopes when determining if incoming_webhook_allowed?" do
+    options = {
+      'scope' => 'incoming-webhook chat:write:bot'
+    }
+
+    strategy.stubs(:options).returns(options)
+    assert strategy.incoming_webhook_allowed?
+  end
+
+  test "handles comma-delimited scopes when determining if incoming_webhook_allowed?" do
+    options = {
+      'scope' => 'incoming-webhook,chat:write:bot'
+    }
+
+    strategy.stubs(:options).returns(options)
+    assert strategy.incoming_webhook_allowed?
+  end
+
+  test "handles space and comma-delimited scopes when determining if incoming_webhook_allowed?" do
+    options = {
+      'scope' => 'incoming-webhook, chat:write:bot'
+    }
+
+    strategy.stubs(:options).returns(options)
+    assert strategy.incoming_webhook_allowed?
+  end
+
+  test "returns false if incoming-webhook is not in the request scope when determining if incoming_webhook_allowed?" do
+    options = {
+      'scope' => 'chat:write:bot'
+    }
+
+    strategy.stubs(:options).returns(options)
+    refute strategy.incoming_webhook_allowed?
+  end
+
+  test "handles blank scope when determining if incoming_webhook_allowed?" do
+    options = {
+      'scope' => ''
+    }
+
+    strategy.stubs(:options).returns(options)
+    refute strategy.incoming_webhook_allowed?
+  end
+
+  test "handles nil scope when determining if incoming_webhook_allowed?" do
+    options = {
+      'scope' => nil
+    }
+
+    strategy.stubs(:options).returns(options)
+    refute strategy.incoming_webhook_allowed?
+  end
+end

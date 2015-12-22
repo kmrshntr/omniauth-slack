@@ -70,7 +70,7 @@ module OmniAuth
       def incoming_webhook_allowed?
         return false unless options['scope']
         webhooks_scopes = ['incoming-webhook']
-        scopes = options['scope'].split(',')
+        scopes = options['scope'].tr(' ', ',').split(',').reject(&:empty?)
         (scopes & webhooks_scopes).any?
       end
     end
