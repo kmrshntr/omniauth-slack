@@ -46,7 +46,8 @@ module OmniAuth
           raw_info: raw_info,
           user_info: user_info,
           team_info: team_info,
-          web_hook_info: web_hook_info
+          web_hook_info: web_hook_info,
+          bot_info: bot_info
         }
       end
 
@@ -67,11 +68,23 @@ module OmniAuth
         access_token.params['incoming_webhook']
       end
 
+      def bot_info
+        return {} unless bot_allowed?
+        access_token.params['bot']
+      end
+
       def incoming_webhook_allowed?
         return false unless options['scope']
         webhooks_scopes = ['incoming-webhook']
         scopes = options['scope'].split(',')
         (scopes & webhooks_scopes).any?
+      end
+
+      def bot_allowed?
+        return false unless options['scope']
+        bot_scopes = ['bot']
+        scopes = options['scope'].split(',')
+        (scopes & bot_scopes).any?
       end
     end
   end
