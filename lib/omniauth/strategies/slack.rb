@@ -20,34 +20,48 @@ module OmniAuth
       uid { raw_info['user_id'] }
 
       info do
-        {
-          name: user_info['user'].to_h['profile'].to_h['real_name_normalized'],
-          email: user_info['user'].to_h['profile'].to_h['email'],
+        hash = {
           nickname: raw_info['user'],
-          first_name: user_info['user'].to_h['profile'].to_h['first_name'],
-          last_name: user_info['user'].to_h['profile'].to_h['last_name'],
-          description: user_info['user'].to_h['profile'].to_h['title'],
-          image_24: user_info['user'].to_h['profile'].to_h['image_24'],
-          image_48: user_info['user'].to_h['profile'].to_h['image_48'],
-          image: user_info['user'].to_h['profile'].to_h['image_192'],
           team: raw_info['team'],
           user: raw_info['user'],
           team_id: raw_info['team_id'],
-          team_domain: team_info['team'].to_h['domain'],
-          user_id: raw_info['user_id'],
-          is_admin: user_info['user'].to_h['is_admin'],
-          is_owner: user_info['user'].to_h['is_owner'],
-          time_zone: user_info['user'].to_h['tz']
+          user_id: raw_info['user_id']
         }
+
+        unless skip_info?
+          hash.merge!(
+            name: user_info['user'].to_h['profile'].to_h['real_name_normalized'],
+            email: user_info['user'].to_h['profile'].to_h['email'],
+            first_name: user_info['user'].to_h['profile'].to_h['first_name'],
+            last_name: user_info['user'].to_h['profile'].to_h['last_name'],
+            description: user_info['user'].to_h['profile'].to_h['title'],
+            image_24: user_info['user'].to_h['profile'].to_h['image_24'],
+            image_48: user_info['user'].to_h['profile'].to_h['image_48'],
+            image: user_info['user'].to_h['profile'].to_h['image_192'],
+            team_domain: team_info['team'].to_h['domain'],
+            is_admin: user_info['user'].to_h['is_admin'],
+            is_owner: user_info['user'].to_h['is_owner'],
+            time_zone: user_info['user'].to_h['tz']
+          )
+        end
+
+        hash
       end
 
       extra do
-        {
+        hash = {
           raw_info: raw_info,
-          user_info: user_info,
-          team_info: team_info,
           web_hook_info: web_hook_info
         }
+
+        unless skip_info?
+          hash.merge!(
+            user_info: user_info,
+            team_info: team_info
+          )
+        end
+
+        hash
       end
 
       def raw_info
