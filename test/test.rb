@@ -134,7 +134,7 @@ class SkipInfoTest < StrategyTestCase
     @options = { skip_info: true }
     strategy.stubs(:raw_info).returns({})
     strategy.stubs(:webhook_info).returns({})
-    assert_equal %w[raw_info web_hook_info], strategy.extra.keys.map(&:to_s)
+    assert_equal %w[raw_info web_hook_info bot_info], strategy.extra.keys.map(&:to_s)
   end
 
 end
