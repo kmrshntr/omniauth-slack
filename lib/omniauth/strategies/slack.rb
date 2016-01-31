@@ -106,6 +106,21 @@ module OmniAuth
         scopes = options['scope'].split(',')
         (scopes & bot_scopes).any?
       end
+
+      # You can pass  +scope+ or +team+ params to the auth request, if you need to set them dynamically.
+      # You can also set these options in the OmniAuth config :authorize_params option.
+      #
+      # For example: /auth/slack?scope=bot
+      def authorize_params
+        super.tap do |params|
+          %w[scope team].each do |v|
+            if request.params[v]
+              params[v.to_sym] = request.params[v]
+            end
+          end
+        end
+      end
+
     end
   end
 end
