@@ -71,6 +71,16 @@ module OmniAuth
         @raw_info ||= access_token.get('/api/auth.test').parsed
       end
 
+      def authorize_params
+        super.tap do |params|
+          %w[scope team].each do |v|
+            if request.params[v]
+              params[v.to_sym] = request.params[v]
+            end
+          end
+        end
+      end
+
       def user_info
         url = URI.parse("/api/users.info")
         url.query = Rack::Utils.build_query(user: raw_info['user_id'])
