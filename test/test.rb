@@ -121,6 +121,27 @@ class IdentityScopeTest < StrategyTestCase
   end
 end
 
+class RawInfoTest < StrategyTestCase
+  def setup
+    super
+    @access_token = stub("OAuth2::AccessToken")
+    strategy.stubs(:access_token).returns(@access_token)
+  end
+
+  test "performs a GET to https://slack.com/api/auth.test" do
+    @access_token.expects(:get).with("/api/auth.test")
+      .returns(stub_everything("OAuth2::Response"))
+    strategy.raw_info
+  end
+
+  test "performs a GET to https://slack.com/api/users.identity for identity scopes" do
+    strategy.stubs(:identity_scoped?).returns(true)
+    @access_token.expects(:get).with("/api/users.identity")
+      .returns(stub_everything("OAuth2::Response"))
+    strategy.raw_info
+  end
+end
+
 class UserInfoTest < StrategyTestCase
 
   def setup

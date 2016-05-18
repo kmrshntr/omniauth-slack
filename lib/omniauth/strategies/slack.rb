@@ -68,7 +68,9 @@ module OmniAuth
       end
 
       def raw_info
-        @raw_info ||= access_token.get('/api/auth.test').parsed
+        @raw_info ||= identity_scoped? ?
+          access_token.get('/api/users.identity').parsed :
+          access_token.get('/api/auth.test').parsed
       end
 
       def authorize_params
