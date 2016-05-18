@@ -133,7 +133,8 @@ class SkipInfoTest < StrategyTestCase
   test 'extra should not include extended info when skip_info is specified' do
     @options = { skip_info: true }
     strategy.stubs(:raw_info).returns({})
-    strategy.stubs(:webhook_info).returns({})
+    strategy.stubs(:bot_info).returns({})
+    strategy.stubs(:web_hook_info).returns({})
     assert_equal %w[raw_info web_hook_info bot_info], strategy.extra.keys.map(&:to_s)
   end
 
