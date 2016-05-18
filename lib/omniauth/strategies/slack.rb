@@ -102,6 +102,10 @@ module OmniAuth
         return {} unless access_token.params.key? 'bot'
         access_token.params['bot']
       end
+
+      def identity_scoped?
+        authorize_params[:scope] =~ /identity\.basic/
+      end
     end
   end
 end

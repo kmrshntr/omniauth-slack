@@ -99,6 +99,28 @@ class CredentialsTest < StrategyTestCase
   end
 end
 
+class IdentityScopeTest < StrategyTestCase
+  test "identity scoped if it includes an identity.basic scope" do
+    @options = { authorize_options: [:scope], scope: "identity.basic" }
+    assert strategy.identity_scoped?
+  end
+
+  test "identity scoped if scope includes additional scopes" do
+    @options = { authorize_options: [:scope],
+                 scope: "team.read,identity.basic,users.read" }
+    assert strategy.identity_scoped?
+  end
+
+  test "not identity scope if it does not include identity.basic scope" do
+    @options = { authorize_options: [:scope], scope: "identity.email" }
+    assert !strategy.identity_scoped?
+  end
+
+  test "not identity scope if a scope is not included" do
+    assert !strategy.identity_scoped?
+  end
+end
+
 class UserInfoTest < StrategyTestCase
 
   def setup
