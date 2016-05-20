@@ -19,56 +19,37 @@ module OmniAuth
         param_name: 'token'
       }
 
-      uid { raw_info['user_id'] }
+      # User ID is not guaranteed to be globally unique across all Slack users.
+      # The combination of user ID and team ID, on the other hand, is guaranteed
+      # to be globally unique.
+      uid { "#{user_identity['id']}-#{team_identity['id']}" }
 
       info do
         hash = {
-          nickname: raw_info['user'],
-          team: raw_info['team'],
-          user: raw_info['user'],
-          team_id: raw_info['team_id'],
-          user_id: raw_info['user_id']
+          name: user_identity['name'],
+          email: user_identity['email'],    # Requires the identity.email scope
+          image: user_identity['image_48'], # Requires the identity.avatar scope
+          team_name: team_identity['name']  # Requires the identity.team scope
         }
 
         unless skip_info?
-          hash.merge!(
-            name: user_info['user'].to_h['profile'].to_h['real_name_normalized'],
-            email: user_info['user'].to_h['profile'].to_h['email'],
-            first_name: user_info['user'].to_h['profile'].to_h['first_name'],
-            last_name: user_info['user'].to_h['profile'].to_h['last_name'],
-            description: user_info['user'].to_h['profile'].to_h['title'],
-            image_24: user_info['user'].to_h['profile'].to_h['image_24'],
-            image_48: user_info['user'].to_h['profile'].to_h['image_48'],
-            image: user_info['user'].to_h['profile'].to_h['image_192'],
-            team_domain: team_info['team'].to_h['domain'],
-            is_admin: user_info['user'].to_h['is_admin'],
-            is_owner: user_info['user'].to_h['is_owner'],
-            time_zone: user_info['user'].to_h['tz']
-          )
+          [:first_name, :last_name, :phone].each do |key|
+            hash[key] = user_info['user'].to_h['profile'].to_h[key.to_s]
+          end
         end
 
         hash
       end
 
       extra do
-        hash = {
-          raw_info: raw_info,
-          web_hook_info: web_hook_info,
-          bot_info: bot_info
+        {
+          raw_info: {
+            user_info: user_info,         # Requires the users:read scope
+            team_info: team_info,         # Requires the team:read scope
+            web_hook_info: web_hook_info,
+            bot_info: bot_info
+          }
         }
-
-        unless skip_info?
-          hash.merge!(
-            user_info: user_info,
-            team_info: team_info
-          )
-        end
-
-        hash
-      end
-
-      def raw_info
-        @raw_info ||= access_token.get('/api/auth.test').parsed
       end
 
       def authorize_params
@@ -81,9 +62,21 @@ module OmniAuth
         end
       end
 
+      def identity
+        @identity ||= access_token.get('/api/users.identity').parsed
+      end
+
+      def user_identity
+        @user_identity ||= identity['user'].to_h
+      end
+
+      def team_identity
+        @team_identity ||= identity['team'].to_h
+      end
+
       def user_info
-        url = URI.parse("/api/users.info")
-        url.query = Rack::Utils.build_query(user: raw_info['user_id'])
+        url = URI.parse('/api/users.info')
+        url.query = Rack::Utils.build_query(user: user_identity['id'])
         url = url.to_s
 
         @user_info ||= access_token.get(url).parsed

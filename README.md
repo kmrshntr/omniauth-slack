@@ -1,13 +1,14 @@
 # Omniauth::Slack
 
-This Gem contains the Slack strategy for OmniAuth.
+This Gem contains the Slack strategy for OmniAuth and supports the
+[Sign in with Slack](https://api.slack.com/docs/sign-in-with-slack) approval flow.
 
 [![Gem Version](https://badge.fury.io/rb/omniauth-slack.svg)](http://badge.fury.io/rb/omniauth-slack)
+
 
 ## Before You Begin
 
 You should have already installed OmniAuth into your app; if not, read the [OmniAuth README](https://github.com/intridea/omniauth) to get started.
-
 
 Now sign into the [Slack application dashboard](https://api.slack.com/applications) and create an application. Take note of your API keys.
 
@@ -30,11 +31,11 @@ Next, tell OmniAuth about this provider. For a Rails app, your `config/initializ
 
 ```ruby
 Rails.application.config.middleware.use OmniAuth::Builder do
-  provider :slack, "API_KEY", "API_SECRET", scope: "client"
+  provider :slack, 'API_KEY', 'API_SECRET', scope: 'identity.basic'
 end
 ```
 
-Replace `"API_KEY"` and `"API_SECRET"` with the appropriate values you obtained [earlier](https://api.slack.com/applications).
+Replace `'API_KEY'` and `'API_SECRET'` with the appropriate values you obtained [earlier](https://api.slack.com/applications).
 
 If you are using [Devise](https://github.com/plataformatec/devise) then it will look like this:
 
@@ -42,13 +43,27 @@ If you are using [Devise](https://github.com/plataformatec/devise) then it will 
 Devise.setup do |config|
   # other stuff...
 
-  config.omniauth :slack, ENV["SLACK_APP_ID"], ENV["SLACK_APP_SECRET"], scope: 'client'
+  config.omniauth :slack, ENV['SLACK_APP_ID'], ENV['SLACK_APP_SECRET'], scope: 'identity.basic'
 
   # other stuff...
 end
 ```
 
-Slack lets you choose from a [few different scopes](https://api.slack.com/docs/oauth#auth_scopes).
+
+## Scopes
+Slack lets you choose from a [few different scopes](https://api.slack.com/docs/oauth-scopes#scopes).
+
+However, you cannot request both `identity` scopes and other scopes at the same time.
+
+If you need to combine regular app scopes with those used for “Sign in with Slack”, you should
+configure two providers:
+
+```ruby
+provider :slack, 'API_KEY', 'API_SECRET', scope: 'identity.basic', name: :sign_in_with_slack
+provider :slack, 'API_KEY', 'API_SECRET', scope: 'team:read,users:read,identify,bot'
+```
+
+Use the first provider to sign users in and the second to add the application to their team.
 
 
 ## Authentication Options
@@ -61,9 +76,10 @@ If you need to ensure that the users use the team whose team_id is 'XXXXXXXX', y
 
 ```ruby
 Rails.application.config.middleware.use OmniAuth::Builder do
-  provider :slack, "API_KEY", "API_SECRET", scope: "identify,read,post", team: 'XXXXXXXX'
+  provider :slack, 'API_KEY', 'API_SECRET', scope: 'identify,read,post', team: 'XXXXXXXX'
 end
 ```
+
 
 ## Contributing
 
@@ -72,6 +88,5 @@ end
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
-
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/kmrshntr/omniauth-slack/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
