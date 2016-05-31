@@ -37,12 +37,14 @@ class CallbackUrlTest < StrategyTestCase
 end
 
 class UidTest < StrategyTestCase
-  def setup
-    super
+  test "returns the user ID from raw_info" do
     strategy.stubs(:raw_info).returns("user_id" => "U123")
+    assert_equal "U123", strategy.uid
   end
 
-  test "returns the user ID from raw_info" do
+  test "returns the user ID from raw info for identity scoped requests" do
+    strategy.stubs(:raw_info).returns("user" => { "id" => "U123" })
+    strategy.stubs(:identity_scoped?).returns true
     assert_equal "U123", strategy.uid
   end
 end
@@ -162,6 +164,13 @@ class UserInfoTest < StrategyTestCase
     @access_token.expects(:get).with("/api/users.info?user=..%2Fhaxx%3FU123%23abc")
       .returns(stub_everything("OAuth2::Response"))
     strategy.user_info
+  end
+
+  test "returns the existing user info for identity scopes" do
+    user_info = { "id" => "U123", "name" => "Jimmy Page" }
+    strategy.stubs(:raw_info).returns("user" => user_info)
+    strategy.stubs(:identity_scoped?).returns(true)
+    assert_equal strategy.user_info, user_info
   end
 end
 

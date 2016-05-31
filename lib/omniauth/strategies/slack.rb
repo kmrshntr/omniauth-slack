@@ -19,7 +19,7 @@ module OmniAuth
         param_name: 'token'
       }
 
-      uid { raw_info['user_id'] }
+      uid { identity_scoped? ? raw_info['user']['id'] : raw_info['user_id'] }
 
       info do
         hash = {
@@ -84,11 +84,15 @@ module OmniAuth
       end
 
       def user_info
-        url = URI.parse("/api/users.info")
-        url.query = Rack::Utils.build_query(user: raw_info['user_id'])
-        url = url.to_s
+        if identity_scoped?
+          @user_info ||= raw_info["user"]
+        else
+          url = URI.parse("/api/users.info")
+          url.query = Rack::Utils.build_query(user: raw_info['user_id'])
+          url = url.to_s
 
-        @user_info ||= access_token.get(url).parsed
+          @user_info ||= access_token.get(url).parsed
+        end
       end
 
       def team_info
