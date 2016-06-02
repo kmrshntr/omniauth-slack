@@ -4,20 +4,17 @@ require 'rack/utils'
 
 module OmniAuth
   module Strategies
+    # Slack OmniAuth Strategy
     class Slack < OmniAuth::Strategies::OAuth2
       option :name, 'slack'
 
       option :authorize_options, [:scope, :team]
 
-      option :client_options, {
-        site: 'https://slack.com',
-        token_url: '/api/oauth.access'
-      }
+      option :client_options, site: 'https://slack.com',
+                              token_url: '/api/oauth.access'
 
-      option :auth_token_params, {
-        mode: :query,
-        param_name: 'token'
-      }
+      option :auth_token_params, mode: :query,
+                                 param_name: 'token'
 
       uid { raw_info['user_id'] }
 
@@ -29,24 +26,7 @@ module OmniAuth
           team_id: raw_info['team_id'],
           user_id: raw_info['user_id']
         }
-
-        unless skip_info?
-          hash.merge!(
-            name: user_info['user'].to_h['profile'].to_h['real_name_normalized'],
-            email: user_info['user'].to_h['profile'].to_h['email'],
-            first_name: user_info['user'].to_h['profile'].to_h['first_name'],
-            last_name: user_info['user'].to_h['profile'].to_h['last_name'],
-            description: user_info['user'].to_h['profile'].to_h['title'],
-            image_24: user_info['user'].to_h['profile'].to_h['image_24'],
-            image_48: user_info['user'].to_h['profile'].to_h['image_48'],
-            image: user_info['user'].to_h['profile'].to_h['image_192'],
-            team_domain: team_info['team'].to_h['domain'],
-            is_admin: user_info['user'].to_h['is_admin'],
-            is_owner: user_info['user'].to_h['is_owner'],
-            time_zone: user_info['user'].to_h['tz']
-          )
-        end
-
+        hash.merge!(additional_info) unless skip_info?
         hash
       end
 
@@ -58,10 +38,8 @@ module OmniAuth
         }
 
         unless skip_info?
-          hash.merge!(
-            user_info: user_info,
-            team_info: team_info
-          )
+          hash[:user_info] = user_info
+          hash[:team_info] = team_info
         end
 
         hash
@@ -73,20 +51,14 @@ module OmniAuth
 
       def authorize_params
         super.tap do |params|
-          %w[scope team].each do |v|
-            if request.params[v]
-              params[v.to_sym] = request.params[v]
-            end
+          %w(scope team).each do |v|
+            params[v.to_sym] = request.params[v] if request.params[v]
           end
         end
       end
 
       def user_info
-        url = URI.parse("/api/users.info")
-        url.query = Rack::Utils.build_query(user: raw_info['user_id'])
-        url = url.to_s
-
-        @user_info ||= access_token.get(url).parsed
+        @user_info ||= access_token.get(api_users_info_url).parsed
       end
 
       def team_info
@@ -101,6 +73,43 @@ module OmniAuth
       def bot_info
         return {} unless access_token.params.key? 'bot'
         access_token.params['bot']
+      end
+
+      protected
+
+      def api_users_info_url
+        url = URI.parse('/api/users.info')
+        url.query = Rack::Utils.build_query(user: raw_info['user_id'])
+        url.to_s
+      end
+
+      def user_info_user
+        @user_info_user ||= user_info.fetch('user', {})
+      end
+
+      def user_info_profile
+        @user_info_profile ||= user_info_user.fetch('profile', {})
+      end
+
+      def team_info_team
+        @team_info_team ||= team_info.fetch('team', {})
+      end
+
+      def additional_info
+        {
+          name: user_info_profile['real_name_normalized'],
+          email: user_info_profile['email'],
+          first_name: user_info_profile['first_name'],
+          last_name: user_info_profile['last_name'],
+          description: user_info_profile['title'],
+          image_24: user_info_profile['image_24'],
+          image_48: user_info_profile['image_48'],
+          image: user_info_profile['image_192'],
+          team_domain: team_info_team['domain'],
+          is_admin: user_info_user['is_admin'],
+          is_owner: user_info_user['is_owner'],
+          time_zone: user_info_user['tz']
+        }
       end
     end
   end
