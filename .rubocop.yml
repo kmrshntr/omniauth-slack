@@ -1,0 +1,8 @@
+inherit_from: .rubocop_todo.yml
+
+AllCops:
+  Include:
+    - '**/Rakefile'
+    - '**/omniauth-slack.gemspec'
+  Exclude:
+    - 'test/**/*.rb'
