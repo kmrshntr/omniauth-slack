@@ -23,28 +23,33 @@ module OmniAuth
 
       info do
         hash = {
-          nickname: raw_info['user'],
-          team: raw_info['team'],
-          user: raw_info['user'],
-          team_id: raw_info['team_id'],
-          user_id: raw_info['user_id']
+          nickname: identity_scoped? ? raw_info['user']['name'] : raw_info['user'],
+          team: identity_scoped? ? raw_info['team']['name'] : raw_info['team'],
+          user: identity_scoped? ? raw_info['user']['name'] : raw_info['user'],
+          team_id: identity_scoped? ? raw_info['team']['id'] : raw_info['team_id'],
+          user_id: identity_scoped? ? raw_info['user']['id'] : raw_info['user_id']
         }
 
         unless skip_info?
           hash.merge!(
-            name: user_info['user'].to_h['profile'].to_h['real_name_normalized'],
-            email: user_info['user'].to_h['profile'].to_h['email'],
-            first_name: user_info['user'].to_h['profile'].to_h['first_name'],
-            last_name: user_info['user'].to_h['profile'].to_h['last_name'],
-            description: user_info['user'].to_h['profile'].to_h['title'],
-            image_24: user_info['user'].to_h['profile'].to_h['image_24'],
-            image_48: user_info['user'].to_h['profile'].to_h['image_48'],
-            image: user_info['user'].to_h['profile'].to_h['image_192'],
-            team_domain: team_info['team'].to_h['domain'],
-            is_admin: user_info['user'].to_h['is_admin'],
-            is_owner: user_info['user'].to_h['is_owner'],
-            time_zone: user_info['user'].to_h['tz']
+            name: identity_scoped? ? user_info['name'] : user_info['user'].to_h['profile'].to_h['real_name_normalized'],
+            email: identity_scoped? ? user_info['email'] : user_info['user'].to_h['profile'].to_h['email'],
+            image_24: identity_scoped? ? user_info['image_24'] : user_info['user'].to_h['profile'].to_h['image_24'],
+            image_48: identity_scoped? ? user_info['image_48'] : user_info['user'].to_h['profile'].to_h['image_48'],
+            image: identity_scoped? ? user_info['image_192'] : user_info['user'].to_h['profile'].to_h['image_192']
           )
+
+          unless identity_scoped?
+            hash.merge!(
+              first_name: user_info['user'].to_h['profile'].to_h['first_name'],
+              last_name: user_info['user'].to_h['profile'].to_h['last_name'],
+              description: user_info['user'].to_h['profile'].to_h['title'],
+              team_domain: team_info['team'].to_h['domain'],
+              is_admin: user_info['user'].to_h['is_admin'],
+              is_owner: user_info['user'].to_h['is_owner'],
+              time_zone: user_info['user'].to_h['tz']
+            )
+          end
         end
 
         hash
@@ -96,7 +101,11 @@ module OmniAuth
       end
 
       def team_info
-        @team_info ||= access_token.get('/api/team.info').parsed
+        if identity_scoped?
+          @team_info ||= raw_info['team']
+        else
+          @team_info ||= access_token.get('/api/team.info').parsed
+        end
       end
 
       def web_hook_info
