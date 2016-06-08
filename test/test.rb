@@ -38,13 +38,13 @@ end
 
 class UidTest < StrategyTestCase
   test "returns the user ID from raw_info" do
-    strategy.stubs(:raw_info).returns("user_id" => "U123")
+    strategy.response_adapter.stubs(:raw_info).returns("user_id" => "U123")
     assert_equal "U123", strategy.uid
   end
 
   test "returns the user ID from raw info for identity scoped requests" do
-    strategy.stubs(:raw_info).returns("user" => { "id" => "U123" })
     strategy.stubs(:identity_scoped?).returns true
+    strategy.response_adapter.stubs(:raw_info).returns("user" => { "id" => "U123" })
     assert_equal "U123", strategy.uid
   end
 end
@@ -153,23 +153,23 @@ class UserInfoTest < StrategyTestCase
   end
 
   test "performs a GET to https://slack.com/api/users.info" do
-    strategy.stubs(:raw_info).returns("user_id" => "U123")
+    strategy.response_adapter.stubs(:raw_info).returns("user_id" => "U123")
     @access_token.expects(:get).with("/api/users.info?user=U123")
       .returns(stub_everything("OAuth2::Response"))
     strategy.user_info
   end
 
   test "URI escapes user ID" do
-    strategy.stubs(:raw_info).returns("user_id" => "../haxx?U123#abc")
+    strategy.response_adapter.stubs(:raw_info).returns("user_id" => "../haxx?U123#abc")
     @access_token.expects(:get).with("/api/users.info?user=..%2Fhaxx%3FU123%23abc")
       .returns(stub_everything("OAuth2::Response"))
     strategy.user_info
   end
 
   test "returns the existing user info for identity scopes" do
-    user_info = { "id" => "U123", "name" => "Jimmy Page" }
-    strategy.stubs(:raw_info).returns("user" => user_info)
     strategy.stubs(:identity_scoped?).returns(true)
+    user_info = { "id" => "U123", "name" => "Jimmy Page" }
+    strategy.response_adapter.stubs(:raw_info).returns("user" => user_info)
     assert_equal strategy.user_info, user_info
   end
 end
@@ -178,13 +178,13 @@ class SkipInfoTest < StrategyTestCase
 
   test 'info should not include extended info when skip_info is specified' do
     @options = { skip_info: true }
-    strategy.stubs(:raw_info).returns({})
+    strategy.response_adapter.stubs(:raw_info).returns({})
     assert_equal %w[nickname team user team_id user_id], strategy.info.keys.map(&:to_s)
   end
 
   test 'extra should not include extended info when skip_info is specified' do
     @options = { skip_info: true }
-    strategy.stubs(:raw_info).returns({})
+    strategy.response_adapter.stubs(:raw_info).returns({})
     strategy.stubs(:bot_info).returns({})
     strategy.stubs(:web_hook_info).returns({})
     assert_equal %w[raw_info web_hook_info bot_info], strategy.extra.keys.map(&:to_s)

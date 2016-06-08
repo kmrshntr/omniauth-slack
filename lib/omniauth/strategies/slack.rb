@@ -1,5 +1,5 @@
 require 'omniauth/strategies/oauth2'
-require 'uri'
+require 'omniauth-slack/response_adapters'
 require 'rack/utils'
 
 module OmniAuth
@@ -19,40 +19,10 @@ module OmniAuth
         param_name: 'token'
       }
 
-      uid { identity_scoped? ? raw_info['user']['id'] : raw_info['user_id'] }
+      uid { response_adapter.uid }
 
       info do
-        hash = {
-          nickname: identity_scoped? ? raw_info['user']['name'] : raw_info['user'],
-          team: identity_scoped? ? raw_info['team']['name'] : raw_info['team'],
-          user: identity_scoped? ? raw_info['user']['name'] : raw_info['user'],
-          team_id: identity_scoped? ? raw_info['team']['id'] : raw_info['team_id'],
-          user_id: identity_scoped? ? raw_info['user']['id'] : raw_info['user_id']
-        }
-
-        unless skip_info?
-          hash.merge!(
-            name: identity_scoped? ? user_info['name'] : user_info['user'].to_h['profile'].to_h['real_name_normalized'],
-            email: identity_scoped? ? user_info['email'] : user_info['user'].to_h['profile'].to_h['email'],
-            image_24: identity_scoped? ? user_info['image_24'] : user_info['user'].to_h['profile'].to_h['image_24'],
-            image_48: identity_scoped? ? user_info['image_48'] : user_info['user'].to_h['profile'].to_h['image_48'],
-            image: identity_scoped? ? user_info['image_192'] : user_info['user'].to_h['profile'].to_h['image_192']
-          )
-
-          unless identity_scoped?
-            hash.merge!(
-              first_name: user_info['user'].to_h['profile'].to_h['first_name'],
-              last_name: user_info['user'].to_h['profile'].to_h['last_name'],
-              description: user_info['user'].to_h['profile'].to_h['title'],
-              team_domain: team_info['team'].to_h['domain'],
-              is_admin: user_info['user'].to_h['is_admin'],
-              is_owner: user_info['user'].to_h['is_owner'],
-              time_zone: user_info['user'].to_h['tz']
-            )
-          end
-        end
-
-        hash
+        response_adapter.info(skip_info?)
       end
 
       extra do
@@ -73,9 +43,7 @@ module OmniAuth
       end
 
       def raw_info
-        @raw_info ||= identity_scoped? ?
-          access_token.get('/api/users.identity').parsed :
-          access_token.get('/api/auth.test').parsed
+        response_adapter.raw_info
       end
 
       def authorize_params
@@ -89,23 +57,11 @@ module OmniAuth
       end
 
       def user_info
-        if identity_scoped?
-          @user_info ||= raw_info["user"]
-        else
-          url = URI.parse("/api/users.info")
-          url.query = Rack::Utils.build_query(user: raw_info['user_id'])
-          url = url.to_s
-
-          @user_info ||= access_token.get(url).parsed
-        end
+        response_adapter.user_info
       end
 
       def team_info
-        if identity_scoped?
-          @team_info ||= raw_info['team']
-        else
-          @team_info ||= access_token.get('/api/team.info').parsed
-        end
+        response_adapter.team_info
       end
 
       def web_hook_info
@@ -116,6 +72,13 @@ module OmniAuth
       def bot_info
         return {} unless access_token.params.key? 'bot'
         access_token.params['bot']
+      end
+
+      def response_adapter
+        @response_adapter ||=
+          identity_scoped? ?
+            OmniAuth::Slack::IdentityScopedResponseAdapter.new(access_token) :
+            OmniAuth::Slack::AppScopedResponseAdapter.new(access_token)
       end
 
       def identity_scoped?

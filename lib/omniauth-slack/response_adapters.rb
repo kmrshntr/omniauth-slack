@@ -1,0 +1,3 @@
+require_relative 'response_adapters/base_response_adapter'
+require_relative 'response_adapters/app_scoped_response_adapter'
+require_relative 'response_adapters/identity_scoped_response_adapter'
