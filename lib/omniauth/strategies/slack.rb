@@ -63,20 +63,34 @@ module OmniAuth
       end
 
       def identity
-        @identity ||= access_token.get('/api/users.identity').parsed
+        url = if options.scope.include?("identity")
+          '/api/users.identity'
+        else
+          '/api/auth.test'
+        end
+
+        @identity ||= access_token.get(url).parsed
       end
 
       def user_identity
-        @user_identity ||= identity['user'].to_h
+        if options.scope.include?("identity")
+          @user_identity ||= identity['user'].to_h
+        else
+          @user_identity ||= identity
+        end
       end
 
       def team_identity
-        @team_identity ||= identity['team'].to_h
+        if options.scope.include?("identity")
+          @team_identity ||= identity['team'].to_h
+        else
+          identity
+        end
       end
 
       def user_info
         url = URI.parse('/api/users.info')
-        url.query = Rack::Utils.build_query(user: user_identity['id'])
+        url.query = Rack::Utils.build_query(user: user_identity['id'] || user_identity['user_id'])
         url = url.to_s
 
         @user_info ||= access_token.get(url).parsed
