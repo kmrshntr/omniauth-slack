@@ -4,7 +4,7 @@ require 'rack/utils'
 
 module OmniAuth
   module Strategies
-    class Slack < OmniAuth::Strategies::OAuth2
+    class SlackSignIn < OmniAuth::Strategies::OAuth2
       option :name, 'slack'
 
       option :authorize_options, [:scope, :team]
@@ -22,20 +22,19 @@ module OmniAuth
       # User ID is not guaranteed to be globally unique across all Slack users.
       # The combination of user ID and team ID, on the other hand, is guaranteed
       # to be globally unique.
-      uid { "#{identity['user_id']}-#{identity['team_id']}" }
+      uid { "#{user_identity['id']}-#{team_identity['id']}" }
 
       info do
         hash = {
-          name: hash_dig(user_info, 'user', 'name') || identity['user'],
-          username: identity['user'],
-          email: hash_dig(user_info, 'user', 'profile', 'email'),
-          team_name: identity['team'],
-          team_id: identity['team_id'],
+          name: user_identity['name'],
+          email: user_identity['email'],    # Requires the identity.email scope
+          image: user_identity['image_48'], # Requires the identity.avatar scope
+          team_name: team_identity['name']  # Requires the identity.team scope
         }
 
         unless skip_info?
-          [:first_name, :last_name, :phone, :image_48].each do |key|
-            hash[key] = hash_dig(user_info, 'user', 'profile', key)
+          [:first_name, :last_name, :phone].each do |key|
+            hash[key] = user_info['user'].to_h['profile'].to_h[key.to_s]
           end
         end
 
@@ -63,21 +62,21 @@ module OmniAuth
         end
       end
 
-      def hash_dig(hash, *keys)
-        keys.inject(hash) do |result, method|
-          result[method.to_s] if result
-        end
+      def identity
+        @identity ||= access_token.get('/api/users.identity').parsed
       end
 
-      def identity
-        url = '/api/auth.test'
+      def user_identity
+        @user_identity ||= identity['user'].to_h
+      end
 
-        @identity ||= access_token.get(url).parsed
+      def team_identity
+        @team_identity ||= identity['team'].to_h
       end
 
       def user_info
         url = URI.parse('/api/users.info')
-        url.query = Rack::Utils.build_query(user: identity['user_id'])
+        url.query = Rack::Utils.build_query(user: user_identity['id'])
         url = url.to_s
 
         @user_info ||= access_token.get(url).parsed
@@ -88,11 +87,13 @@ module OmniAuth
       end
 
       def web_hook_info
-        access_token.params['incoming_webhook'].to_h
+        return {} unless access_token.params.key? 'incoming_webhook'
+        access_token.params['incoming_webhook']
       end
 
       def bot_info
-        access_token.params['bot'].to_h
+        return {} unless access_token.params.key? 'bot'
+        access_token.params['bot']
       end
     end
   end
