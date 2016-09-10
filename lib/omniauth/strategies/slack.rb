@@ -16,14 +16,14 @@ module OmniAuth
     # requests for each authorization, which breaks (or renders useless)
     # omniauth's skip_info feature. This version of omniauth-slack respects
     # the skip_info feature: if set, only a single api request will be made
-    # for each authorization. Note that the response of this request may or
-    # may not contain email datad.
+    # for each authorization. The response of this request may or
+    # may not contain email data.
     # 
     # Note that the scope requested during the authorization phase is not
     # available to omniauth's callback phase, as this information is not
     # present in the callback url or the token from Slack. Downstream
     # processing based on requested scope must be handled in the endpoint app.
-    # Better yet, downstream logic should be based on actual  authorized token
+    # Better yet, downstream logic should be based on actual authorized token
     # scopes, as provided by the Slack authorization response (or any further
     # Slack api response).
     # 
