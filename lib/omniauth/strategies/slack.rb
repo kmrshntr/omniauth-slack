@@ -75,7 +75,7 @@ module OmniAuth
       info do
         # Start with only what we can glean from the authorization response.
         hash = { 
-          name: auth['user'].to_h['name'] || "NA (#{auth['user_id'] || auth['user'].to_h['id']})",
+          name: auth['user'].to_h['name'] || "NA",
           email: auth['user'].to_h['email'] || 'NA',
           user_id: auth['user_id'] || auth['user'].to_h['id'],
           team: auth['team_name'] || auth['team'].to_h['name'] || 'NA',
@@ -86,51 +86,60 @@ module OmniAuth
         # Now add everything else, requiring further calls to the api, if necessary.
         unless skip_info?
           %w(first_name last_name phone skype avatar_hash real_name real_name_normalized).each do |key|
-            hash[key] = (
+            hash[key.to_sym] = (
               user_info['user'].to_h['profile'] ||
               user_profile['profile']
             ).to_h[key]
           end
 
           %w(deleted status color tz tz_label tz_offset is_admin is_owner is_primary_owner is_restricted is_ultra_restricted is_bot has_2fa).each do |key|
-            hash[key] = user_info['user'].to_h[key]
+            hash[key.to_sym] = user_info['user'].to_h[key]
           end
 
           more_info = {
-            image:
-              hash['image'] ||
+            image: (
+              hash[:image] ||
               user_identity.to_h['image_48'] ||
               user_info['user'].to_h['profile'].to_h['image_48'] ||
-              user_profile['profile'].to_h['image_48'],
-            name:
-              hash['name'] ||
+              user_profile['profile'].to_h['image_48']
+              ),
+            name:(
+              hash[:name] ||
               user_identity['name'] ||
               user_info['user'].to_h['real_name'] ||
-              user_profile['profile'].to_h['real_name'],
-            email:
-              hash['email'] ||
+              user_profile['profile'].to_h['real_name']
+              ),
+            email:(
+              hash[:email] ||
               user_identity.to_h['email'] ||
               user_info['user'].to_h['profile'].to_h['email'] ||
-              user_profile['profile'].to_h['email'],
-            team:
-              hash['team'] ||
+              user_profile['profile'].to_h['email']
+              ),
+            team:(
+              hash[:team] ||
               team_identity.to_h['name'] ||
-              team_info['team'].to_h['name'],
-            team_domain:
+              team_info['team'].to_h['name']
+              ),
+            team_domain:(
               auth['team'].to_h['domain'] ||
               team_identity.to_h['domain'] ||
-              team_info['team'].to_h['domain'],
-            team_image:
+              team_info['team'].to_h['domain']
+              ),
+            team_image:(
               auth['team'].to_h['image_44'] ||
               team_identity.to_h['image_44'] ||
-              team_info['team'].to_h['icon'].to_h['image_44'],
-            team_email_domain:
-              team_info['team'].to_h['email_domain'],
-            nickname:
+              team_info['team'].to_h['icon'].to_h['image_44']
+              ),
+            team_email_domain:(
+              team_info['team'].to_h['email_domain']
+              ),
+            nickname:(
               user_info.to_h['user'].to_h['name'] ||
               auth['user'].to_h['name'] ||
-              user_identity.to_h['name'],
+              user_identity.to_h['name']
+              ),
           }
+          
           hash.merge!(more_info)
         end
         hash
@@ -178,6 +187,7 @@ module OmniAuth
       end
 
       def identity
+        return Hash.new unless has_scope?('identity.basic')
         @identity_raw ||= access_token.get('/api/users.identity')
         @identity ||= @identity_raw.parsed
       end
