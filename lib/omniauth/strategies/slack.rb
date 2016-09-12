@@ -33,8 +33,8 @@ module OmniAuth
     # the user and the endpoint app require. This works because Slack scopes
     # are additive - once you successfully authorize a scope, the token will
     # posses that scope forever, regardless of what flow or scopes are
-    # requested in the future. Removal of scopes requires deletion of the
-    # token.
+    # requested at future authorizations. Removal of scopes requires deletion
+    # of the token.
     # 
     # Other noteable features of this omniauth-slack version.
     # 
@@ -50,8 +50,8 @@ module OmniAuth
     # * In the extra:raw_info section, return as much of each api response as
     #   possible for all api requests made for the current authorization
     #   request. Possible calls are oauth.access, users.info, team.info,
-    #   users.identity, and users.profile.get. An attempt is made to use as few
-    #   api requests as possible.
+    #   users.identity, users.profile.get, and bots.info. An attempt is made
+    #   to use as few api requests as possible.
     class Slack < OmniAuth::Strategies::OAuth2
       option :name, 'slack'
 
@@ -148,7 +148,8 @@ module OmniAuth
       extra do
         {
           web_hook_info: web_hook_info,
-          bot_info: bot_info,
+          #bot_info: bot_info,
+          bot_info: auth['bot'] || bots_info['bot'],
           auth: auth,
           identity: @identity,
           user_info: @user_info,
@@ -159,7 +160,8 @@ module OmniAuth
             identity: @identity_raw,
             user_info: @user_info_raw,
             user_profile: @user_profile_raw,
-            team_info: @team_info_raw
+            team_info: @team_info_raw,
+            bot_info: @bots_info_raw
           }
         }
       end
@@ -187,7 +189,7 @@ module OmniAuth
       end
 
       def identity
-        return Hash.new unless has_scope?('identity.basic')
+        return {} unless has_scope?('identity.basic')
         @identity_raw ||= access_token.get('/api/users.identity')
         @identity ||= @identity_raw.parsed
       end
@@ -201,7 +203,7 @@ module OmniAuth
       end
 
       def user_info
-        return Hash.new unless has_scope?('users:read')
+        return {} unless has_scope?('users:read')
         url = URI.parse('/api/users.info')
         url.query = Rack::Utils.build_query(user: auth['user_id'] || auth['user'].to_h['id'])
         url = url.to_s
@@ -211,7 +213,7 @@ module OmniAuth
       end
       
       def user_profile
-        return Hash.new unless has_scope?('users.profile:read')
+        return {} unless has_scope?('users.profile:read')
         url = URI.parse('/api/users.profile.get')
         url.query = Rack::Utils.build_query(user: auth['user_id'] || auth['user'].to_h['id'])
         url = url.to_s
@@ -221,7 +223,7 @@ module OmniAuth
       end
 
       def team_info
-        return Hash.new unless has_scope?('team:read')
+        return {} unless has_scope?('team:read')
         @team_info_raw ||= access_token.get('/api/team.info')
         @team_info ||= @team_info_raw.parsed
       end
@@ -230,11 +232,18 @@ module OmniAuth
         return {} unless access_token.params.key? 'incoming_webhook'
         access_token.params['incoming_webhook']
       end
-
-      def bot_info
-        return {} unless access_token.params.key? 'bot'
-        access_token.params['bot']
+      
+      def bots_info
+        return {} unless has_scope?('users:read')
+        @bots_info_raw ||= access_token.get('/api/bots.info')
+        @bots_info ||= @bots_info_raw.parsed
       end
+
+      # Old bot method.
+      # def bot_info
+      #   return {} unless access_token.params.key? 'bot'
+      #   access_token.params['bot']
+      # end
       
       def has_scope?(scope)
         access_token['scope'].to_s.include?(scope.to_s)
