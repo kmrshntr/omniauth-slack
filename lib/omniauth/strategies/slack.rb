@@ -173,6 +173,16 @@ module OmniAuth
           expires: false
         }
       end
+      
+      # Set team subdomain at runtime, if params['subdomain'] exist in omniauth authorization url.
+      # Allows sign-in of specified team (as the slack subdomain name) to be part of the oauth flow.
+      # Example: https://my.app.com/auth/slack?subdomain=myotherteam
+      def client
+        super.tap do |c|
+          session['omniauth.subdomain'] = request.params['subdomain'] if request.params['subdomain']
+          c.site = "https://#{session['omniauth.subdomain']}.slack.com" if session['omniauth.subdomain']
+        end
+      end
 
       def authorize_params
         super.tap do |params|
