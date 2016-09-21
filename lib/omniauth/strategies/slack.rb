@@ -52,6 +52,10 @@ module OmniAuth
     #   request. Possible calls are oauth.access, users.info, team.info,
     #   users.identity, users.profile.get, and bots.info. An attempt is made
     #   to use as few api requests as possible.
+    #
+    # * Allow setting of Slack subdomain at runtime.
+    #   See #subdomain definition below.
+    #
     class Slack < OmniAuth::Strategies::OAuth2
       option :name, 'slack'
 
@@ -174,9 +178,10 @@ module OmniAuth
         }
       end
       
-      # Set team subdomain at runtime, if params['subdomain'] exist in omniauth authorization url.
+      # Set team subdomain at runtime, if params['subdomain'] exists in omniauth authorization url.
       # Allows sign-in of specified team (as the slack subdomain name) to be part of the oauth flow.
       # Example: https://my.app.com/auth/slack?subdomain=myotherteam
+      # ... will redirect to https://myotherteam.slack.com/oauth/authorize...
       def client
         super.tap do |c|
           session['omniauth.subdomain'] = request.params['subdomain'] if request.params['subdomain']
