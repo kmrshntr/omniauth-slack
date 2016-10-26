@@ -44,6 +44,8 @@ module OmniAuth
       extra do
         {
           raw_info: {
+            team_identity: team_identity,  # Requires identify:basic scope
+            user_identity: user_identity,  # Requires identify:basic scope
             user_info: user_info,         # Requires the users:read scope
             team_info: team_info,         # Requires the team:read scope
             web_hook_info: web_hook_info,
