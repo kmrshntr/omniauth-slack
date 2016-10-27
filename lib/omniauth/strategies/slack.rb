@@ -79,10 +79,10 @@ module OmniAuth
       info do
         # Start with only what we can glean from the authorization response.
         hash = { 
-          name: auth['user'].to_h['name'] || "NA",
-          email: auth['user'].to_h['email'] || 'NA',
+          name: auth['user'].to_h['name'],
+          email: auth['user'].to_h['email'],
           user_id: auth['user_id'] || auth['user'].to_h['id'],
-          team: auth['team_name'] || auth['team'].to_h['name'] || 'NA',
+          team: auth['team_name'] || auth['team'].to_h['name'],
           team_id: auth['team_id'] || auth['team'].to_h['id'],
           image: auth['team'].to_h['image_48']
         }
@@ -184,8 +184,7 @@ module OmniAuth
       # ... will redirect to https://myotherteam.slack.com/oauth/authorize...
       def client
         super.tap do |c|
-          session['omniauth.subdomain'] = request.params['subdomain'] if request.params['subdomain']
-          c.site = "https://#{session['omniauth.subdomain']}.slack.com" if session['omniauth.subdomain']
+          c.site = "https://#{request.params['subdomain']}.slack.com" if request.params['subdomain']
         end
       end
 
