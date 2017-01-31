@@ -66,7 +66,7 @@ provider :slack, 'API_KEY', 'API_SECRET', scope: 'team:read,users:read,identify,
 Use the first provider to sign users in and the second to add the application to their team.
 
 
-## Auth Hash
+## Auth Hash Example
 
 For the scope `team:read,users:read,identify` the resulting auth hash would look like this:
 
