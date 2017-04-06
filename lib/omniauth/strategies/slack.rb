@@ -78,7 +78,7 @@ module OmniAuth
 
       def user_info
         url = URI.parse('/api/users.info')
-        url.query = Rack::Utils.build_query(user: user_identity['id'])
+        url.query = Rack::Utils.build_query(user: user_identity['id'] || access_token.params["user_id"])
         url = url.to_s
 
         @user_info ||= access_token.get(url).parsed
