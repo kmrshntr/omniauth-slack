@@ -7,7 +7,7 @@ module OmniAuth
     class Slack < OmniAuth::Strategies::OAuth2
       option :name, 'slack'
 
-      option :authorize_options, [:scope, :team]
+      option :authorize_options, [:scope, :team, :redirect_uri]
 
       option :client_options, {
         site: 'https://slack.com',
