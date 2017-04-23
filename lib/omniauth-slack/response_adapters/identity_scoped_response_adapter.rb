@@ -28,15 +28,15 @@ module OmniAuth
       end
 
       def team_info
-        @team_info ||= raw_info['team']
+        @team_info ||= raw_info['team'].to_h
       end
 
       def uid
-        raw_info['user']['id']
+        user_info['id']
       end
 
       def user_info
-        @user_info ||= raw_info["user"]
+        @user_info ||= raw_info['user'].to_h
       end
     end
   end
