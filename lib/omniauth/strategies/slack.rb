@@ -25,25 +25,17 @@ module OmniAuth
       uid { "#{user_identity['id']}-#{team_identity['id']}" }
 
       info do
-        hash = {
-          name: user_identity['name'],
-          email: user_identity['email'],    # Requires the identity.email scope
-          image: user_identity['image_48'], # Requires the identity.avatar scope
-          team_name: team_identity['name']  # Requires the identity.team scope
-        }
-
-        unless skip_info?
-          [:first_name, :last_name, :phone].each do |key|
-            hash[key] = user_info['user'].to_h['profile'].to_h[key.to_s]
-          end
+        if authorize_params.scope.include?('identity.basic')
+          identity_to_info
+        else
+          user_info_to_info
         end
-
-        hash
       end
 
       extra do
         {
           raw_info: {
+            auth_test: auth_test,
             team_identity: team_identity,  # Requires identify:basic scope
             user_identity: user_identity,  # Requires identify:basic scope
             user_info: user_info,         # Requires the users:read scope
@@ -64,21 +56,39 @@ module OmniAuth
         end
       end
 
+      def auth_test
+        @auth_test ||= access_token.get('/api/auth.test').parsed
+      end
+
       def identity
         @identity ||= access_token.get('/api/users.identity').parsed
       end
 
       def user_identity
-        @user_identity ||= identity['user'].to_h
+        @user_identity ||= if authorize_params.scope.include?('identity.basic')
+          identity['user'].to_h
+        else
+          {}
+        end
       end
 
       def team_identity
-        @team_identity ||= identity['team'].to_h
+        @team_identity ||= if authorize_params.scope.include?('identity.basic')
+          identity['team'].to_h
+        else
+          {}
+        end
       end
 
       def user_info
+        user_id = if authorize_params.scope.include?('identity.basic')
+          user_identity['id']
+        else
+          auth_test['user_id']
+        end
+
         url = URI.parse('/api/users.info')
-        url.query = Rack::Utils.build_query(user: user_identity['id'])
+        url.query = Rack::Utils.build_query(user: user_id)
         url = url.to_s
 
         @user_info ||= access_token.get(url).parsed
@@ -103,6 +113,43 @@ module OmniAuth
       def callback_url
         full_host + script_name + callback_path
       end
+
+      def identity_to_info
+        hash = {
+          name: user_identity['name'],
+          username: user_identity['username'],
+          email: user_identity['email'],    # Requires the identity.email scope
+          image: user_identity['image_48'], # Requires the identity.avatar scope
+          team_name: team_identity['name']  # Requires the identity.team scope
+        }
+
+        unless skip_info?
+          [:first_name, :last_name, :phone].each do |key|
+            hash[key] = user_info['user'].to_h['profile'].to_h[key.to_s]
+          end
+        end
+
+        hash
+      end
+
+      def user_info_to_info
+        hash = {
+          name: user_info['user']['real_name'],
+          username: user_info['user']['name'],
+          email: user_info['user']['profile']['email'],    # Requires the users:read scope
+          image: user_info['user']['profile']['image_48'], # Requires the users:read scope
+          team_name: team_info['team']['name']     # Requires the users:read scope
+        }
+
+        unless skip_info?
+          [:first_name, :last_name, :phone].each do |key|
+            hash[key] = user_info['user'].to_h['profile'].to_h[key.to_s]
+          end
+        end
+
+        hash
+      end
+
     end
   end
 end
