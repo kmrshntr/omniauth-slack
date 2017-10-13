@@ -48,7 +48,7 @@ module OmniAuth
 
       def authorize_params
         super.tap do |params|
-          %w[scope team redirect_uri].each do |v|
+          %w[scope team].each do |v|
             if request.params[v]
               params[v.to_sym] = request.params[v]
             end
@@ -113,6 +113,9 @@ module OmniAuth
       # def callback_url
       #   full_host + script_name + callback_path
       # end
+      def callback_url
+        authorization_params.redirect_uri
+      end
 
       def identity_to_info
         hash = {
