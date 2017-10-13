@@ -110,9 +110,9 @@ module OmniAuth
 
       private
 
-      def callback_url
-        full_host + script_name + callback_path
-      end
+      # def callback_url
+      #   full_host + script_name + callback_path
+      # end
 
       def identity_to_info
         hash = {
