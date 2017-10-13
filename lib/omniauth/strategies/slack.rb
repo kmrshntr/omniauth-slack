@@ -48,7 +48,7 @@ module OmniAuth
 
       def authorize_params
         super.tap do |params|
-          %w[scope team].each do |v|
+          %w[scope team redirect_uri].each do |v|
             if request.params[v]
               params[v.to_sym] = request.params[v]
             end
