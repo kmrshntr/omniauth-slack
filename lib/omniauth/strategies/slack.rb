@@ -22,7 +22,13 @@ module OmniAuth
       # User ID is not guaranteed to be globally unique across all Slack users.
       # The combination of user ID and team ID, on the other hand, is guaranteed
       # to be globally unique.
-      uid { "#{user_identity['id']}-#{team_identity['id']}" }
+      uid do 
+        if authorize_params.scope.include?('identity.basic')
+          "#{user_identity['id']}-#{team_identity['id']}"
+        else
+          user_info_and_team_info_to_uid
+        end
+      end
 
       info do
         if authorize_params.scope.include?('identity.basic')
@@ -91,7 +97,7 @@ module OmniAuth
         url.query = Rack::Utils.build_query(user: user_id)
         url = url.to_s
 
-        @user_info ||= access_token.get(url).parsed['user']
+        @user_info ||= access_token.get(url).parsed
       end
 
       def team_info
@@ -135,13 +141,17 @@ module OmniAuth
         hash
       end
 
+      def user_info_and_team_info_to_uid
+        "#{user_info['user']['id']}-#{team_info['team']['id']}"
+      end
+
       def user_info_to_info
         hash = {
           name: user_info['user']['real_name'],
           username: user_info['user']['name'],
           email: user_info['user']['profile']['email'],    # Requires the users:read scope
           image: user_info['user']['profile']['image_48'], # Requires the users:read scope
-          team_name: team_info['team']['name']     # Requires the users:read scope
+          team_name: team_info['team']['name']             # Requires the users:read scope
         }
 
         unless skip_info?
