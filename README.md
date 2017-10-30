@@ -76,6 +76,7 @@ For the scope `team:read,users:read,identify` the resulting auth hash would look
   uid: "U3BPA937E",
   info: {
     description: "Welcome to Slack",
+    display_name: "matty",
     email: "email@example.com",
     first_name: "Matt",
     image: "https://secure.gravatar.com/avatar/69720796ae3e1c2d63cd66b2d53571a5.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2F7fa9%2Fimg%2Favatars%2Fava_0013-192.png",
@@ -141,6 +142,8 @@ For the scope `team:read,users:read,identify` the resulting auth hash would look
         name: "matty",
         profile: {
           avatar_hash: "g69720796ae3",
+          display_name: "matty",
+          display_name_normalized: "matty",
           first_name: "Matt",
           image_192: "https://secure.gravatar.com/avatar/69720796ae3e1c2d63cd66b2d53571a5.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2F7fa9%2Fimg%2Favatars%2Fava_0013-192.png",
           image_24: "https://secure.gravatar.com/avatar/69720796ae3e1c2d63cd66b2d53571a5.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2F7fa9%2Fimg%2Favatars%2Fava_0013-24.png",

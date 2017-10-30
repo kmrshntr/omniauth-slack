@@ -33,7 +33,7 @@ module OmniAuth
         }
 
         unless skip_info?
-          [:first_name, :last_name, :phone].each do |key|
+          [:first_name, :last_name, :phone, :display_name].each do |key|
             hash[key] = user_info['user'].to_h['profile'].to_h[key.to_s]
           end
         end
