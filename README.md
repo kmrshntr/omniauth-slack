@@ -43,7 +43,7 @@ If you are using [Devise](https://github.com/plataformatec/devise) then it will 
 Devise.setup do |config|
   # other stuff...
 
-  config.omniauth :slack, ENV['SLACK_APP_ID'], ENV['SLACK_APP_SECRET'], scope: 'identity.basic'
+  config.omniauth :slack, ENV['SLACK_CLIENT_ID'], ENV['SLACK_CLIENT_SECRET'], scope: 'identity.basic'
 
   # other stuff...
 end
