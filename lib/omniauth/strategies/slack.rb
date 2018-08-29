@@ -107,7 +107,7 @@ module OmniAuth
       private
       
       def user_id
-        user_identity['id'].presence || workspace_info['authorizing_user_id'].presence
+        user_identity['id'].presence || workspace_info.dig('authorizing_user', 'user_id').presence
       end
       
       def team_id
