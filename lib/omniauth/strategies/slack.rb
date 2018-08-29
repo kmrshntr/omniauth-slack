@@ -22,7 +22,7 @@ module OmniAuth
       # User ID is not guaranteed to be globally unique across all Slack users.
       # The combination of user ID and team ID, on the other hand, is guaranteed
       # to be globally unique.
-      uid { "#{user_identity['id']}-#{team_identity['id']}" }
+      uid { "#{user_id}-#{team_id}" }
 
       info do
         hash = {
@@ -49,7 +49,8 @@ module OmniAuth
             user_info: user_info,         # Requires the users:read scope
             team_info: team_info,         # Requires the team:read scope
             web_hook_info: web_hook_info,
-            bot_info: bot_info
+            bot_info: bot_info,
+            workspace_info: workspace_info
           }
         }
       end
@@ -98,7 +99,20 @@ module OmniAuth
         access_token.params['bot']
       end
 
+      def workspace_info
+        return {} unless access_token.params.key? 'team_id'
+        access_token.params.except(['ok', 'access_token', 'token_type'])
+      end
+
       private
+      
+      def user_id
+        user_identity['id'].presence || workspace_info['authorizing_user_id'].presence
+      end
+      
+      def team_id
+        team_identity['id'].presence || workspace_info['team_id'].presence
+      end
 
       def callback_url
         full_host + script_name + callback_path
