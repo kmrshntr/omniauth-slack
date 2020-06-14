@@ -65,6 +65,8 @@ provider :slack, 'API_KEY', 'API_SECRET', scope: 'team:read,users:read,identify,
 
 Use the first provider to sign users in and the second to add the application to their team.
 
+It's worth noting that if you use the `identity.` scopes, your [Auth Hash will be slightly different](#identity-auth-hash)
+
 
 ## Auth Hash Example
 
@@ -92,11 +94,11 @@ For the scope `team:read,users:read,identify` the resulting auth hash would look
     user: "matty",
     user_id: "U3BPA937E"
   },
-  credentials {
+  credentials: {
     expires: false,
     token: "xoxp-127131411201-127810174082-127813170226-f205827fb956488602bef2068471d7a5",
   },
-  extra {
+  extra: {
     bot_info: {},
     raw_info: {
       ok: true,
@@ -113,12 +115,12 @@ For the scope `team:read,users:read,identify` the resulting auth hash would look
         email_domain: "",
         icon: {
           image_102: "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-102.png",
-          image_132 "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-132ng",
-          image_230"https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-230ng",
-          image_34 "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-34png",
-          image_44 "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-44png",
-          image_68 "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-68png",
-          image_88 "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-88png",
+          image_132: "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-132ng",
+          image_230: "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-230ng",
+          image_34: "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-34png",
+          image_44: "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-44png",
+          image_68: "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-68png",
+          image_88: "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-88png",
           image_default: true
         },
         id: "A3V3VC35Y",
@@ -165,6 +167,73 @@ For the scope `team:read,users:read,identify` the resulting auth hash would look
 }
 ```
 
+### Identity Auth Hash
+
+If you use the `identity.` scopes (for instance, if you're using this for "Sign in with Slack"), your Auth hash will look like the below. The scopes for this were `'identity.basic,identity.email,identity.team,identity.avatar'`. Note the `team_identity` and `user_identity` keys. 
+
+(Don't worry about the "missing scope" messages in the `user_info` and `team_info` keys - this is expected as you haven't asked for those scopes. Most of the information they provide is contained in the `_identity` keys, and you can always [ask for more scopes](https://api.slack.com/tutorials/understanding-oauth-scopes-bot#scopes) later if necessary)
+
+```ruby
+{ 
+  provider: "slack",
+  uid: "U3BPA937E",
+  info: {
+    name: "Matt Holmes",
+    email: "email@example.com",
+    image: "https://secure.gravatar.com/avatar/69720796ae3e1c2d63cd66b2d53571a5.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2F7fa9%2Fimg%2Favatars%2Fava_0013-192.png",
+    team_name: "Mattison co.",
+    first_name: nil,
+    last_name: nil,
+    phone: nil
+  },
+  credentials: { 
+    token:  "xoxp-127131411201-127810174082-127813170226-f205827fb956488602bef2068471d7a5",
+    expires: false
+  },
+  extra: {
+    raw_info: {
+      team_identity: {
+        id: "A3V3VC35Y",
+        name: "Mattison co.",
+        domain: "mattison",
+        image_34: "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-34png",
+        image_44: "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-44png",
+        image_68: "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-68png",
+        image_88: "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-88png",
+        image_102: "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-88png",
+        image_132: "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-88png",
+        image_230: "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-88png",
+        image_original: "https://a.slack-edge.com/66f9/img/avatars-teams/ava_0018-88png"
+      },
+      user_identity: {
+        name: "Matt Holmes",
+        id: "U3BPA937E",
+        email: "email@example.com",
+        image_24: "https://secure.gravatar.com/avatar/69720796ae3e1c2d63cd66b2d53571a5.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2F7fa9%2Fimg%2Favatars%2Fava_0013-24.png",
+        image_32: "https://secure.gravatar.com/avatar/69720796ae3e1c2d63cd66b2d53571a5.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2F7fa9%2Fimg%2Favatars%2Fava_0013-32.png",
+        image_48: "https://secure.gravatar.com/avatar/69720796ae3e1c2d63cd66b2d53571a5.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2F7fa9%2Fimg%2Favatars%2Fava_0013-48.png",
+        image_72: "https://secure.gravatar.com/avatar/69720796ae3e1c2d63cd66b2d53571a5.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2F7fa9%2Fimg%2Favatars%2Fava_0013-72.png",
+        image_192: "https://secure.gravatar.com/avatar/69720796ae3e1c2d63cd66b2d53571a5.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2F7fa9%2Fimg%2Favatars%2Fava_0013-192.png",
+        image_512: "https://secure.gravatar.com/avatar/69720796ae3e1c2d63cd66b2d53571a5.jpg?s=192&d=https%3A%2F%2Fa.slack-edge.com%2F7fa9%2Fimg%2Favatars%2Fava_0013-512.png"
+      },
+      user_info: {
+        ok: false,
+        error: "missing_scope",
+        needed: "users:read",
+        provided: "identity.basic,identity.email,identity.avatar,identity.team"
+      },
+      team_info: {
+        ok: false,
+        error: "missing_scope",
+        needed: "team:read",
+        provided: "identity.basic,identity.email,identity.avatar,identity.team"
+      },
+      web_hook_info: {},
+      bot_info: {},
+    }
+  }
+}
+```
 
 ## Authentication Options
 
