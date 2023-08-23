@@ -98,8 +98,6 @@ module OmniAuth
         access_token.params['bot']
       end
 
-      private
-
       def callback_url
         full_host + script_name + callback_path
       end

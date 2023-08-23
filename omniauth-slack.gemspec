@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["kimura@enigmo.co.jp"]
   spec.description   = %q{OmniAuth strategy for Slack}
   spec.summary       = %q{OmniAuth strategy for Slack}
-  spec.homepage      = "https://github.com/kmrshntr/omniauth-slack.git"
+  spec.homepage      = "https://github.com/delighted/omniauth-slack.git"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
@@ -16,9 +16,9 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency 'omniauth-oauth2', "~> 1.4"
+  spec.add_runtime_dependency 'omniauth-oauth2', "~> 1.8.0"
 
-  spec.add_development_dependency "bundler", "~> 1.11.2"
+  spec.add_development_dependency "bundler", "~> 2.3.22"
   spec.add_development_dependency "rake"
   spec.add_development_dependency "minitest"
   spec.add_development_dependency "mocha"

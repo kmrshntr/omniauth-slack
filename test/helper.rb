@@ -1,6 +1,6 @@
 require "bundler/setup"
 require "minitest/autorun"
-require "mocha/setup"
+require "mocha/minitest"
 require "omniauth/strategies/slack"
 
 OmniAuth.config.test_mode = true
@@ -32,7 +32,7 @@ end
 
 class StrategyTestCase < TestCase
   def setup
-    @request = stub("Request")
+    @request = Object.new
     @request.stubs(:params).returns({})
     @request.stubs(:cookies).returns({})
     @request.stubs(:env).returns({})
